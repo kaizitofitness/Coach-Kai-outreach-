@@ -210,11 +210,11 @@
 
 <!-- Bottom Nav -->
 <nav class="bnav">
-  <button class="nbtn on" onclick="switchTab(0)" id="nav-0"><span class="nbtn-icon">📊</span>Dashboard</button>
-  <button class="nbtn" onclick="switchTab(1)" id="nav-1"><span class="nbtn-icon">✍️</span>Generate</button>
-  <button class="nbtn" onclick="switchTab(2)" id="nav-2"><span class="nbtn-icon">👥</span>Leads</button>
-  <button class="nbtn" onclick="switchTab(3)" id="nav-3"><span class="nbtn-icon">💬</span>Convo</button>
-  <button class="nbtn" onclick="switchTab(4)" id="nav-4" style="position:relative"><span class="nbtn-icon">🔔</span>Follow-Ups<span class="ndot" id="followup-dot" style="display:none"></span></button>
+  <button class="nbtn on" ontouchend="event.preventDefault();switchTab(0)" onclick="switchTab(0)" id="nav-0"><span class="nbtn-icon">📊</span>Dashboard</button>
+  <button class="nbtn" ontouchend="event.preventDefault();switchTab(1)" onclick="switchTab(1)" id="nav-1"><span class="nbtn-icon">✍️</span>Generate</button>
+  <button class="nbtn" ontouchend="event.preventDefault();switchTab(2)" onclick="switchTab(2)" id="nav-2"><span class="nbtn-icon">👥</span>Leads</button>
+  <button class="nbtn" ontouchend="event.preventDefault();switchTab(3)" onclick="switchTab(3)" id="nav-3"><span class="nbtn-icon">💬</span>Convo</button>
+  <button class="nbtn" ontouchend="event.preventDefault();switchTab(4)" onclick="switchTab(4)" id="nav-4" style="position:relative"><span class="nbtn-icon">🔔</span>Follow-Ups<span class="ndot" id="followup-dot" style="display:none"></span></button>
 </nav>
 
 <!-- Lead Modal -->
@@ -277,7 +277,11 @@ function daysSince(iso) { return Math.floor((Date.now()-new Date(iso))/86400000)
 async function callClaude(prompt) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
-    headers: {"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"},
+    headers: {
+      "Content-Type":"application/json",
+      "x-api-key":"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",
+      "anthropic-version":"2023-06-01"
+    },
     body: JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})
   });
   const data = await res.json();
