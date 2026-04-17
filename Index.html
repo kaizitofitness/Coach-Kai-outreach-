@@ -1,343 +1,289 @@
-import { useState, useEffect } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="theme-color" content="#080808"/>
+  <title>Coach Kai</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080808;color:#f0ede8;font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:80px}
+    .hdr{background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;color:#e8ff47}
+    .logo span{color:#f0ede8}
+    .badge{border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;background:#161f00;border:1px solid #e8ff47;color:#e8ff47}
+    .badge-red{background:#1a0808!important;border-color:#ff4444!important;color:#ff6b6b!important}
+    .bnav{position:fixed;bottom:0;left:0;right:0;background:#0d0d0d;border-top:1px solid #1a1a1a;display:flex;z-index:20;padding-bottom:env(safe-area-inset-bottom,0px)}
+    .nbtn{flex:1;padding:10px 2px 8px;background:none;border:none;color:#3a3a3a;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    .nbtn.on{color:#e8ff47}
+    .nbtn-icon{font-size:18px;line-height:1}
+    .ndot{width:6px;height:6px;background:#ff4444;border-radius:50%;position:absolute;top:6px;right:calc(50% - 16px);border:1px solid #080808}
+    .pg{max-width:600px;margin:0 auto;padding:18px 14px 16px;display:none}
+    .pg.active{display:block}
+    .stitle{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:#e8ff47;margin-bottom:14px}
+    .clabel{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#3a3a3a;margin-bottom:8px;margin-top:14px;display:block}
+    .card{background:#111;border:1px solid #1c1c1c;border-radius:13px;padding:16px;margin-bottom:11px}
+    .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
+    .sbox{background:#111;border:1px solid #1c1c1c;border-radius:12px;padding:14px 13px}
+    .sbox.alert{border-color:#2a1010;background:#110808}
+    .snum{font-family:'Bebas Neue',sans-serif;font-size:34px;color:#e8ff47;line-height:1}
+    .slbl{font-size:11px;color:#444;margin-top:3px;font-weight:500}
+    .pbar{background:#181818;border-radius:4px;height:7px;overflow:hidden;margin-top:7px}
+    .pfill{height:100%;background:linear-gradient(90deg,#e8ff47,#b8d400);border-radius:4px}
+    .wchart{display:flex;align-items:flex-end;gap:5px;height:55px;margin-top:7px}
+    .bwrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%}
+    .bbg{flex:1;width:100%;background:#181818;border-radius:3px;display:flex;align-items:flex-end;overflow:hidden}
+    .bfill{width:100%;background:#e8ff47;border-radius:3px;min-height:2px}
+    .bday{font-size:9px;color:#3a3a3a;font-weight:700}
+    .pipe-row{display:flex;justify-content:space-between;padding:4px 0}
+    .pipe-item{text-align:center}
+    .pipe-num{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1}
+    .pipe-lbl{font-size:10px;color:#444;font-weight:600;margin-top:2px}
+    textarea,.sselect{width:100%;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:9px;padding:12px;color:#f0ede8;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;outline:none;-webkit-appearance:none}
+    textarea{resize:none}
+    textarea::placeholder{color:#272727}
+    .bprimary{width:100%;background:#e8ff47;color:#080808;border:none;border-radius:9px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;margin-top:14px;touch-action:manipulation}
+    .bsec{background:#181818;border:1px solid #262626;border-radius:7px;padding:9px 14px;color:#777;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation}
+    .bdanger{background:#180808;border:1px solid #2e1010;border-radius:7px;padding:9px 14px;color:#ff6b6b;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation}
+    .flex-row{display:flex;gap:8px;margin-top:12px}
+    .flex1{flex:1}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .chip{background:#141414;border:1px solid #242424;border-radius:20px;padding:6px 13px;font-size:11px;cursor:pointer;color:#444;font-family:'DM Sans',sans-serif;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .chip.on{border-color:#e8ff47;color:#e8ff47;background:#161f00}
+    .lcard{background:#111;border:1px solid #1c1c1c;border-radius:11px;padding:13px;margin-bottom:7px;cursor:pointer;touch-action:manipulation}
+    .lcard.ov{border-color:#2e1010}
+    .ltop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+    .lname{font-size:13px;font-weight:600;color:#ddd}
+    .ldate{font-size:11px;color:#3a3a3a}
+    .lprev{font-size:12px;color:#444;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:7px}
+    .strow{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+    .stbadge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px;text-transform:uppercase}
+    .st-new{background:#161f00;color:#e8ff47}.st-contacted{background:#0a1525;color:#4a9eff}.st-replied{background:#1a0a25;color:#b06eff}.st-hot{background:#1f0a00;color:#ff8c47}.st-closed{background:#0a1f0a;color:#4aff6e}.st-dead{background:#1a1a1a;color:#3a3a3a}
+    .platbadge{font-size:10px;color:#3a3a3a;font-weight:600}
+    .fcard{background:#110808;border:1px solid #261010;border-radius:11px;padding:13px;margin-bottom:9px}
+    .fdays{font-size:11px;color:#ff6b6b;font-weight:700;margin-bottom:5px}
+    .fname{font-size:13px;font-weight:600;color:#ddd;margin-bottom:8px}
+    .ovlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:30;display:none;align-items:flex-end}
+    .ovlay.show{display:flex}
+    .modal{background:#111;border-top:1px solid #1e1e1e;border-radius:18px 18px 0 0;padding:22px 16px 40px;width:100%;max-height:88vh;overflow-y:auto}
+    .mhandle{width:34px;height:4px;background:#282828;border-radius:2px;margin:0 auto 18px}
+    .mtitle{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:1px;color:#e8ff47;margin-bottom:14px}
+    .tip{background:#0e1500;border:1px solid #1c2800;border-radius:8px;padding:11px 13px;font-size:12px;color:#5a7a00;line-height:1.7;margin-bottom:14px}
+    .empty{text-align:center;padding:40px 18px;color:#2e2e2e}
+    .empty-icon{font-size:34px;margin-bottom:9px}
+    .empty-text{font-size:13px;line-height:1.6}
+    .search-box{width:100%;background:#111;border:1px solid #1c1c1c;border-radius:9px;padding:10px 13px;color:#f0ede8;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:12px}
+    .search-box::placeholder{color:#333}
+    .info-box{font-size:13px;color:#888;line-height:1.6;padding:11px 13px;background:#0d0d0d;border-radius:8px;margin-bottom:12px}
+    .success-msg{color:#4aff6e;font-size:13px;text-align:center;margin-top:10px;font-weight:600}
+  </style>
+</head>
+<body>
 
-const DAILY_GOAL = 30;
-const FOLLOW_UP_DAYS = 2;
-const TABS = ["Dashboard", "Log Lead", "Leads", "Follow-Ups"];
-const TAB_ICONS = ["📊", "➕", "👥", "🔔"];
+<div class="hdr">
+  <div class="logo">Coach <span>Kai</span></div>
+  <div style="display:flex;gap:7px;align-items:center">
+    <div class="badge badge-red" id="overdue-badge" style="display:none">🔔 <span id="overdue-count">0</span></div>
+    <div class="badge"><span id="today-count">0</span>/30</div>
+  </div>
+</div>
 
-const load = (key, fallback) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; } };
-const save = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} };
+<div class="pg active" id="pg-0">
+  <div class="stitle">DASHBOARD</div>
+  <div class="sgrid">
+    <div class="sbox"><div class="snum" id="d-today">0</div><div class="slbl">Sent Today</div><div class="pbar"><div class="pfill" id="d-bar" style="width:0%"></div></div></div>
+    <div class="sbox"><div class="snum" id="d-remaining" style="color:#f0ede8">30</div><div class="slbl" id="d-rem-lbl">Left to Goal</div></div>
+    <div class="sbox"><div class="snum" id="d-total">0</div><div class="slbl">Total Leads</div></div>
+    <div class="sbox" id="d-ov-box" onclick="switchTab(3)" style="cursor:pointer"><div class="snum" id="d-overdue">0</div><div class="slbl">Overdue Follow-Ups</div></div>
+  </div>
+  <div class="card"><div class="clabel" style="margin-top:0">This Week</div><div class="wchart" id="week-chart"></div></div>
+  <div class="card"><div class="clabel" style="margin-top:0">Pipeline</div><div class="pipe-row" id="pipeline"></div></div>
+  <div class="tip">💡 <strong>To generate DMs:</strong> Go to your Claude chat and type:<br><br><em>"Generate DM for: [describe the person]"</em><br><br>Get 3 messages instantly. Send one, then come back and tap <strong>Log Lead</strong>!</div>
+</div>
 
-export default function App() {
-  const [tab, setTab] = useState(0);
-  const [leads, setLeads] = useState(() => load("ck_leads_v4", []));
-  const persistLeads = (u) => { setLeads(u); save("ck_leads_v4", u); };
-  const today = new Date().toLocaleDateString();
-  const todayCount = leads.filter(l => l.date === today).length;
-  const remaining = Math.max(DAILY_GOAL - todayCount, 0);
-  const overdueLeads = leads.filter(l => {
-    if (l.status === "closed" || l.status === "dead") return false;
-    if (!l.lastContact) return false;
-    return (Date.now() - new Date(l.lastContact)) / 86400000 >= FOLLOW_UP_DAYS;
-  });
+<div class="pg" id="pg-1">
+  <div class="stitle">LOG A LEAD</div>
+  <div class="tip">After sending a DM, log it here so you never lose track of anyone.</div>
+  <span class="clabel" style="margin-top:0">Platform</span>
+  <div class="chips" id="plat-chips">
+    <div class="chip on" onclick="setPlatform('Instagram',this)">Instagram</div>
+    <div class="chip" onclick="setPlatform('TikTok',this)">TikTok</div>
+  </div>
+  <span class="clabel">Who did you reach out to?</span>
+  <textarea id="prospect-info" rows="3" placeholder="e.g. Dad of 3, works in real estate, always tired..." style="margin-bottom:0"></textarea>
+  <span class="clabel">Message you sent</span>
+  <textarea id="message-sent" rows="4" placeholder="Paste the DM you sent them..."></textarea>
+  <button class="bprimary" onclick="saveLead()">SAVE LEAD →</button>
+  <div class="success-msg" id="save-ok" style="display:none">✓ Lead saved!</div>
+</div>
 
-  return (
-    <div style={{ minHeight: "100vh", background: "#080808", color: "#f0ede8", fontFamily: "'DM Sans', sans-serif", paddingBottom: 72 }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Bebas+Neue&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0}
-        .hdr{background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
-        .logo{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:2px;color:#e8ff47}
-        .logo span{color:#f0ede8}
-        .badge{border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;background:#161f00;border:1px solid #e8ff47;color:#e8ff47}
-        .badge-red{background:#1a0808;border:1px solid #ff4444;color:#ff6b6b}
-        .bnav{position:fixed;bottom:0;left:0;right:0;background:#0d0d0d;border-top:1px solid #1a1a1a;display:flex;z-index:20}
-        .nbtn{flex:1;padding:10px 2px 8px;background:none;border:none;color:#3a3a3a;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
-        .nbtn.on{color:#e8ff47}
-        .nbtn-icon{font-size:18px;line-height:1}
-        .ndot{width:6px;height:6px;background:#ff4444;border-radius:50%;position:absolute;top:6px;right:calc(50% - 16px);border:1px solid #080808}
-        .pg{max-width:600px;margin:0 auto;padding:18px 14px 16px}
-        .stitle{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:#e8ff47;margin-bottom:14px}
-        .clabel{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#3a3a3a;margin-bottom:8px;margin-top:14px;display:block}
-        .card{background:#111;border:1px solid #1c1c1c;border-radius:13px;padding:16px;margin-bottom:11px}
-        .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px}
-        .sbox{background:#111;border:1px solid #1c1c1c;border-radius:12px;padding:14px 13px}
-        .sbox.alert{border-color:#2a1010;background:#110808}
-        .snum{font-family:'Bebas Neue',sans-serif;font-size:34px;color:#e8ff47;line-height:1}
-        .snum.white{color:#f0ede8}
-        .snum.green{color:#4aff6e}
-        .snum.red{color:#ff6b6b}
-        .slbl{font-size:11px;color:#444;margin-top:3px;font-weight:500}
-        .pbar{background:#181818;border-radius:4px;height:7px;overflow:hidden;margin-top:7px}
-        .pfill{height:100%;background:linear-gradient(90deg,#e8ff47,#b8d400);border-radius:4px;transition:width .6s ease}
-        .wchart{display:flex;align-items:flex-end;gap:5px;height:55px;margin-top:7px}
-        .bwrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%}
-        .bbg{flex:1;width:100%;background:#181818;border-radius:3px;display:flex;align-items:flex-end;overflow:hidden}
-        .bfill{width:100%;background:#e8ff47;border-radius:3px;min-height:2px}
-        .bday{font-size:9px;color:#3a3a3a;font-weight:700}
-        .pipe-row{display:flex;justify-content:space-between}
-        .pipe-item{text-align:center}
-        .pipe-num{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1}
-        .pipe-lbl{font-size:10px;color:#444;font-weight:600;margin-top:2px}
-        textarea,.sinput,.sselect{width:100%;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:9px;padding:12px;color:#f0ede8;font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.6;outline:none}
-        textarea{resize:none}
-        textarea::placeholder,.sinput::placeholder{color:#272727}
-        .sinput{padding:10px 12px;margin-bottom:0}
-        .sselect{-webkit-appearance:none;margin-bottom:0}
-        .bprimary{width:100%;background:#e8ff47;color:#080808;border:none;border-radius:9px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;margin-top:14px}
-        .bsec{background:#181818;border:1px solid #262626;border-radius:7px;padding:8px 13px;color:#777;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
-        .bsec.cp{border-color:#e8ff47;color:#e8ff47;background:#161f00}
-        .bdanger{background:#180808;border:1px solid #2e1010;border-radius:7px;padding:8px 13px;color:#ff6b6b;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
-        .lcard{background:#111;border:1px solid #1c1c1c;border-radius:11px;padding:13px;margin-bottom:7px;cursor:pointer}
-        .lcard.ov{border-color:#2e1010}
-        .ltop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
-        .lname{font-size:13px;font-weight:600;color:#ddd}
-        .ldate{font-size:11px;color:#3a3a3a}
-        .lprev{font-size:12px;color:#444;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:7px}
-        .strow{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
-        .stbadge{font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px;text-transform:uppercase}
-        .st-new{background:#161f00;color:#e8ff47}.st-contacted{background:#0a1525;color:#4a9eff}.st-replied{background:#1a0a25;color:#b06eff}.st-hot{background:#1f0a00;color:#ff8c47}.st-closed{background:#0a1f0a;color:#4aff6e}.st-dead{background:#1a1a1a;color:#3a3a3a}
-        .platbadge{font-size:10px;color:#3a3a3a;font-weight:600}
-        .fcard{background:#110808;border:1px solid #261010;border-radius:11px;padding:13px;margin-bottom:9px}
-        .fdays{font-size:11px;color:#ff6b6b;font-weight:700;margin-bottom:5px}
-        .fname{font-size:13px;font-weight:600;color:#ddd;margin-bottom:3px}
-        .ovlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:30;display:flex;align-items:flex-end}
-        .modal{background:#111;border-top:1px solid #1e1e1e;border-radius:18px 18px 0 0;padding:22px 16px 40px;width:100%;max-height:88vh;overflow-y:auto}
-        .mhandle{width:34px;height:4px;background:#282828;border-radius:2px;margin:0 auto 18px}
-        .mtitle{font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:1px;color:#e8ff47;margin-bottom:16px}
-        .tip{background:#0e1500;border:1px solid #1c2800;border-radius:8px;padding:10px 13px;font-size:12px;color:#5a7a00;line-height:1.6;margin-bottom:14px}
-        .empty{text-align:center;padding:40px 18px;color:#2e2e2e}
-        .empty-icon{font-size:34px;margin-bottom:9px}
-        .empty-text{font-size:13px;line-height:1.6}
-        .flex-row{display:flex;gap:8px;margin-top:12px}
-        .flex1{flex:1}
-        .chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:0}
-        .chip{background:#141414;border:1px solid #242424;border-radius:20px;padding:5px 11px;font-size:11px;cursor:pointer;color:#444;font-family:'DM Sans',sans-serif}
-        .chip.on{border-color:#e8ff47;color:#e8ff47;background:#161f00}
-        .search-input{width:100%;background:#111;border:1px solid #1c1c1c;border-radius:9px;padding:10px 13px;color:#f0ede8;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:12px}
-        .search-input::placeholder{color:#333}
-      `}</style>
+<div class="pg" id="pg-2">
+  <div class="stitle">ALL LEADS</div>
+  <input class="search-box" placeholder="Search leads..." oninput="renderLeads()" id="lead-search">
+  <div class="chips" id="filter-chips"></div>
+  <div id="leads-list"></div>
+</div>
 
-      {/* Header */}
-      <div className="hdr">
-        <div className="logo">Coach <span>Kai</span></div>
-        <div style={{display:"flex",gap:7}}>
-          {overdueLeads.length > 0 && <div className="badge badge-red">🔔 {overdueLeads.length}</div>}
-          <div className="badge">{todayCount}/{DAILY_GOAL}</div>
-        </div>
-      </div>
+<div class="pg" id="pg-3">
+  <div class="stitle">FOLLOW-UPS</div>
+  <div id="fu-list"></div>
+</div>
 
-      {/* Pages */}
-      {tab === 0 && <Dashboard leads={leads} todayCount={todayCount} remaining={remaining} overdueLeads={overdueLeads} setTab={setTab} />}
-      {tab === 1 && <LogLead leads={leads} persistLeads={persistLeads} />}
-      {tab === 2 && <LeadsTab leads={leads} persistLeads={persistLeads} />}
-      {tab === 3 && <FollowUps leads={leads} persistLeads={persistLeads} overdueLeads={overdueLeads} />}
+<div class="bnav">
+  <button class="nbtn on" id="nav-0" onclick="switchTab(0)"><span class="nbtn-icon">📊</span>Dashboard</button>
+  <button class="nbtn" id="nav-1" onclick="switchTab(1)"><span class="nbtn-icon">➕</span>Log Lead</button>
+  <button class="nbtn" id="nav-2" onclick="switchTab(2)"><span class="nbtn-icon">👥</span>Leads</button>
+  <button class="nbtn" id="nav-3" onclick="switchTab(3)" style="position:relative"><span class="nbtn-icon">🔔</span>Follow-Ups<span class="ndot" id="fu-dot" style="display:none"></span></button>
+</div>
 
-      {/* Bottom Nav */}
-      <div className="bnav">
-        {TABS.map((t, i) => (
-          <button key={i} className={`nbtn ${tab === i ? "on" : ""}`} onClick={() => setTab(i)}>
-            <span className="nbtn-icon">{TAB_ICONS[i]}</span>
-            {t}
-            {i === 3 && overdueLeads.length > 0 && <span className="ndot" />}
-          </button>
-        ))}
-      </div>
+<div class="ovlay" id="modal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhandle"></div>
+    <div class="mtitle">LEAD DETAILS</div>
+    <div style="font-size:11px;color:#444;margin-bottom:8px" id="m-meta"></div>
+    <div class="info-box" id="m-info"></div>
+    <div class="clabel" style="margin-top:0">Message Sent</div>
+    <div class="info-box" id="m-msg"></div>
+    <div class="clabel">Status</div>
+    <select class="sselect" id="m-status" onchange="updateStatus()" style="margin-bottom:12px">
+      <option value="new">new</option><option value="contacted">contacted</option><option value="replied">replied</option><option value="hot">hot 🔥</option><option value="closed">closed ✅</option><option value="dead">dead</option>
+    </select>
+    <div class="clabel">Notes</div>
+    <textarea id="m-notes" rows="3" placeholder="Notes..." style="margin-bottom:14px" onblur="saveNotes()"></textarea>
+    <div class="flex-row">
+      <button class="bsec flex1" onclick="closeModal()">Close</button>
+      <button class="bdanger" onclick="deleteLead()">Delete</button>
     </div>
-  );
+  </div>
+</div>
+
+<script>
+const GOAL=30,FU_DAYS=2;
+let leads=[],platform="Instagram",filter="all",selId=null;
+
+function load(){try{leads=JSON.parse(localStorage.getItem("ck_v5")||"[]")}catch{leads=[]}}
+function persist(){try{localStorage.setItem("ck_v5",JSON.stringify(leads))}catch{}}
+function tod(){return new Date().toLocaleDateString()}
+function todCount(){return leads.filter(l=>l.date===tod()).length}
+function overdue(){return leads.filter(l=>{if(l.status==="closed"||l.status==="dead")return false;if(!l.lastContact)return false;return(Date.now()-new Date(l.lastContact))/86400000>=FU_DAYS})}
+function daysAgo(iso){return Math.floor((Date.now()-new Date(iso))/86400000)}
+
+function switchTab(n){
+  document.querySelectorAll(".pg").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nbtn").forEach(b=>b.classList.remove("on"));
+  document.getElementById("pg-"+n).classList.add("active");
+  document.getElementById("nav-"+n).classList.add("on");
+  if(n===0)renderDash();
+  if(n===2)renderLeads();
+  if(n===3)renderFU();
 }
 
-function Dashboard({ leads, todayCount, remaining, overdueLeads, setTab }) {
-  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  const weekCounts = days.map((_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - ((d.getDay()+6)%7) + i);
-    return leads.filter(l => l.date === d.toLocaleDateString()).length;
-  });
-  const maxBar = Math.max(...weekCounts, 1);
-
-  return (
-    <div className="pg">
-      <div className="stitle">DASHBOARD</div>
-      <div className="sgrid">
-        <div className="sbox">
-          <div className="snum">{todayCount}</div>
-          <div className="slbl">Sent Today</div>
-          <div className="pbar"><div className="pfill" style={{width:`${Math.min((todayCount/DAILY_GOAL)*100,100)}%`}}/></div>
-        </div>
-        <div className="sbox">
-          <div className={`snum ${remaining === 0 ? "green" : "white"}`}>{remaining}</div>
-          <div className="slbl">{remaining === 0 ? "Goal Hit! 🎉" : "Left to Goal"}</div>
-        </div>
-        <div className="sbox">
-          <div className="snum">{leads.length}</div>
-          <div className="slbl">Total Leads</div>
-        </div>
-        <div className={`sbox ${overdueLeads.length > 0 ? "alert" : ""}`} style={{cursor:overdueLeads.length>0?"pointer":"default"}} onClick={() => overdueLeads.length > 0 && setTab(3)}>
-          <div className={`snum ${overdueLeads.length > 0 ? "red" : "white"}`}>{overdueLeads.length}</div>
-          <div className="slbl">Overdue Follow-Ups</div>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="clabel" style={{marginTop:0}}>This Week</div>
-        <div className="wchart">
-          {days.map((d,i) => (
-            <div className="bwrap" key={i}>
-              <div className="bbg"><div className="bfill" style={{height:`${(weekCounts[i]/maxBar)*100}%`}}/></div>
-              <div className="bday">{d}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="clabel" style={{marginTop:0}}>Pipeline</div>
-        <div className="pipe-row">
-          {[{l:"New",s:"new",c:"#e8ff47"},{l:"Replied",s:"replied",c:"#b06eff"},{l:"Hot 🔥",s:"hot",c:"#ff8c47"},{l:"Closed ✅",s:"closed",c:"#4aff6e"}].map(p => (
-            <div className="pipe-item" key={p.s}>
-              <div className="pipe-num" style={{color:p.c}}>{leads.filter(l=>l.status===p.s).length}</div>
-              <div className="pipe-lbl">{p.l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="tip">
-        💡 <strong>How to use:</strong> Go to the Claude chat and type "Generate DM for: [describe the person]" — I'll give you 3 ready-to-copy messages. Then come back here and log the lead!
-      </div>
-    </div>
-  );
+function updateHeader(){
+  const tc=todCount(),ov=overdue().length;
+  document.getElementById("today-count").textContent=tc;
+  const ob=document.getElementById("overdue-badge");
+  ob.style.display=ov>0?"flex":"none";
+  document.getElementById("overdue-count").textContent=ov;
+  document.getElementById("fu-dot").style.display=ov>0?"block":"none";
 }
 
-function LogLead({ leads, persistLeads }) {
-  const [platform, setPlatform] = useState("Instagram");
-  const [info, setInfo] = useState("");
-  const [message, setMessage] = useState("");
-  const [saved, setSaved] = useState(false);
-
-  const save = () => {
-    if (!info.trim()) return;
-    const lead = {
-      id: Date.now(),
-      date: new Date().toLocaleDateString(),
-      lastContact: new Date().toISOString(),
-      prospectInfo: info.slice(0, 150),
-      platform,
-      initialMessage: message.slice(0, 300),
-      status: "new",
-      notes: "",
-      convo: message ? [{ role: "kai", text: message, ts: Date.now() }] : []
-    };
-    persistLeads([lead, ...leads]);
-    setSaved(true);
-    setTimeout(() => { setSaved(false); setInfo(""); setMessage(""); }, 2000);
-  };
-
-  return (
-    <div className="pg">
-      <div className="stitle">LOG A LEAD</div>
-      <div className="tip">After sending a DM, log it here to track it. Come to this chat to generate the DM first, then log it here.</div>
-
-      <span className="clabel">Platform</span>
-      <div className="chips" style={{marginBottom:14}}>
-        {["Instagram","TikTok"].map(p => <button key={p} className={`chip ${platform===p?"on":""}`} onClick={()=>setPlatform(p)}>{p}</button>)}
-      </div>
-
-      <span className="clabel">Who did you reach out to?</span>
-      <textarea rows={3} value={info} onChange={e=>setInfo(e.target.value)} placeholder="e.g. Dad of 3, works in real estate, always posts about being tired..." style={{marginBottom:14}} />
-
-      <span className="clabel">Message you sent (paste it in)</span>
-      <textarea rows={4} value={message} onChange={e=>setMessage(e.target.value)} placeholder="Paste the DM you sent them..." style={{marginBottom:0}} />
-
-      <button className="bprimary" onClick={save} disabled={!info.trim()}>
-        {saved ? "✓ LEAD SAVED!" : "SAVE LEAD →"}
-      </button>
-    </div>
-  );
+function renderDash(){
+  const tc=todCount(),rem=Math.max(GOAL-tc,0),ov=overdue().length;
+  document.getElementById("d-today").textContent=tc;
+  document.getElementById("d-bar").style.width=Math.min((tc/GOAL)*100,100)+"%";
+  document.getElementById("d-remaining").textContent=rem;
+  document.getElementById("d-remaining").style.color=rem===0?"#4aff6e":"#f0ede8";
+  document.getElementById("d-rem-lbl").textContent=rem===0?"Goal Hit! 🎉":"Left to Goal";
+  document.getElementById("d-total").textContent=leads.length;
+  document.getElementById("d-overdue").textContent=ov;
+  document.getElementById("d-overdue").style.color=ov>0?"#ff6b6b":"#f0ede8";
+  document.getElementById("d-ov-box").className="sbox"+(ov>0?" alert":"");
+  const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const counts=days.map((_,i)=>{const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7)+i);return leads.filter(l=>l.date===d.toLocaleDateString()).length});
+  const mx=Math.max(...counts,1);
+  document.getElementById("week-chart").innerHTML=days.map((d,i)=>`<div class="bwrap"><div class="bbg"><div class="bfill" style="height:${(counts[i]/mx)*100}%"></div></div><div class="bday">${d}</div></div>`).join("");
+  const pipes=[{l:"New",s:"new",c:"#e8ff47"},{l:"Replied",s:"replied",c:"#b06eff"},{l:"Hot",s:"hot",c:"#ff8c47"},{l:"Closed",s:"closed",c:"#4aff6e"}];
+  document.getElementById("pipeline").innerHTML=pipes.map(p=>`<div class="pipe-item"><div class="pipe-num" style="color:${p.c}">${leads.filter(l=>l.status===p.s).length}</div><div class="pipe-lbl">${p.l}</div></div>`).join("");
 }
 
-function LeadsTab({ leads, persistLeads }) {
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [selected, setSelected] = useState(null);
-
-  const filtered = leads.filter(l => {
-    const ms = (l.prospectInfo||"").toLowerCase().includes(search.toLowerCase());
-    const mf = filter === "all" || l.status === filter;
-    return ms && mf;
-  });
-
-  const updateLead = (id, updates) => {
-    const u = leads.map(l => l.id === id ? {...l, ...updates} : l);
-    persistLeads(u);
-    if (selected?.id === id) setSelected(s => ({...s, ...updates}));
-  };
-
-  return (
-    <div className="pg">
-      <div className="stitle">ALL LEADS</div>
-      <input className="search-input" placeholder="Search leads..." value={search} onChange={e=>setSearch(e.target.value)} />
-      <div className="chips" style={{marginBottom:12}}>
-        {["all","new","contacted","replied","hot","closed","dead"].map(f => (
-          <button key={f} className={`chip ${filter===f?"on":""}`} onClick={()=>setFilter(f)}>{f}</button>
-        ))}
-      </div>
-      {filtered.length === 0 ? (
-        <div className="empty"><div className="empty-icon">👥</div><div className="empty-text">No leads yet. Generate a DM in the chat, send it, then log it in the Log Lead tab!</div></div>
-      ) : filtered.map(lead => {
-        const ov = lead.status !== "closed" && lead.status !== "dead" && lead.lastContact && (Date.now()-new Date(lead.lastContact))/86400000 >= FOLLOW_UP_DAYS;
-        return (
-          <div key={lead.id} className={`lcard ${ov?"ov":""}`} onClick={() => setSelected(lead)}>
-            <div className="ltop">
-              <div className="lname">{(lead.prospectInfo||"").slice(0,38)}{(lead.prospectInfo||"").length>38?"...":""}</div>
-              <div className="ldate">{lead.date}</div>
-            </div>
-            <div className="lprev">"{(lead.initialMessage||"No message logged").slice(0,65)}..."</div>
-            <div className="strow">
-              <span className={`stbadge st-${lead.status}`}>{lead.status}</span>
-              <span className="platbadge">{lead.platform}</span>
-              {ov && <span style={{fontSize:10,color:"#ff6b6b",fontWeight:700}}>⚠ FOLLOW UP</span>}
-            </div>
-          </div>
-        );
-      })}
-      {selected && (
-        <div className="ovlay" onClick={() => setSelected(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="mhandle" />
-            <div className="mtitle">LEAD DETAILS</div>
-            <div style={{fontSize:11,color:"#444",marginBottom:5}}>{selected.date} · {selected.platform}</div>
-            <div style={{fontSize:13,color:"#666",marginBottom:14,lineHeight:1.6,fontStyle:"italic"}}>"{selected.prospectInfo}"</div>
-            {selected.initialMessage && <>
-              <div className="clabel" style={{marginTop:0}}>Message Sent</div>
-              <div style={{fontSize:13,color:"#999",lineHeight:1.6,marginBottom:14,padding:"11px 13px",background:"#0d0d0d",borderRadius:8}}>{selected.initialMessage}</div>
-            </>}
-            <div className="clabel" style={{marginTop:0}}>Status</div>
-            <select className="sselect" value={selected.status} onChange={e=>updateLead(selected.id,{status:e.target.value})} style={{marginBottom:12}}>
-              {["new","contacted","replied","hot","closed","dead"].map(s=><option key={s} value={s}>{s}</option>)}
-            </select>
-            <div className="clabel">Notes</div>
-            <textarea rows={3} defaultValue={selected.notes||""} onBlur={e=>updateLead(selected.id,{notes:e.target.value})} placeholder="Notes..." style={{marginBottom:14}} />
-            <div className="flex-row">
-              <button className="bsec flex1" onClick={() => setSelected(null)}>Close</button>
-              <button className="bdanger" onClick={() => { if(window.confirm("Delete?")) { persistLeads(leads.filter(l=>l.id!==selected.id)); setSelected(null); } }}>Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function setPlatform(p,el){
+  platform=p;
+  document.querySelectorAll("#plat-chips .chip").forEach(c=>c.classList.remove("on"));
+  el.classList.add("on");
 }
 
-function FollowUps({ leads, persistLeads, overdueLeads }) {
-  const days = iso => Math.floor((Date.now()-new Date(iso))/86400000);
-
-  const markDead = id => persistLeads(leads.map(l => l.id===id ? {...l,status:"dead"} : l));
-  const markContacted = id => persistLeads(leads.map(l => l.id===id ? {...l,lastContact:new Date().toISOString(),status:"contacted"} : l));
-
-  return (
-    <div className="pg">
-      <div className="stitle">FOLLOW-UPS</div>
-      {overdueLeads.length === 0 ? (
-        <div className="empty"><div className="empty-icon">✅</div><div className="empty-text">All caught up! No overdue follow-ups.</div></div>
-      ) : (
-        <>
-          <div className="tip">🔔 {overdueLeads.length} lead{overdueLeads.length>1?"s":""} need follow-up. Go to the Claude chat and type:<br/><br/><strong>"Follow up DM for: [paste their info]"</strong><br/><br/>I'll write it for you instantly!</div>
-          {overdueLeads.map(lead => (
-            <div className="fcard" key={lead.id}>
-              <div className="fdays">⚠ {days(lead.lastContact)} days since last contact</div>
-              <div className="fname">{(lead.prospectInfo||"").slice(0,55)}{(lead.prospectInfo||"").length>55?"...":""}</div>
-              <div style={{fontSize:12,color:"#444",fontStyle:"italic",marginBottom:11}}>
-                Last: "{(lead.initialMessage||"").slice(0,55)}..."
-              </div>
-              <div className="flex-row" style={{marginTop:0}}>
-                <button className="bsec flex1" onClick={() => markContacted(lead.id)}>✓ Followed Up</button>
-                <button className="bdanger" onClick={() => markDead(lead.id)}>Dead</button>
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-    </div>
-  );
+function saveLead(){
+  const info=document.getElementById("prospect-info").value.trim();
+  const msg=document.getElementById("message-sent").value.trim();
+  if(!info){alert("Please describe who you reached out to!");return}
+  leads.unshift({id:Date.now(),date:tod(),lastContact:new Date().toISOString(),prospectInfo:info.slice(0,150),platform,initialMessage:msg.slice(0,300),status:"new",notes:""});
+  persist();updateHeader();renderDash();
+  document.getElementById("prospect-info").value="";
+  document.getElementById("message-sent").value="";
+  const s=document.getElementById("save-ok");
+  s.style.display="block";setTimeout(()=>s.style.display="none",2000);
 }
+
+function initFilters(){
+  const fs=["all","new","contacted","replied","hot","closed","dead"];
+  document.getElementById("filter-chips").innerHTML=fs.map(f=>`<div class="chip${f===filter?" on":""}" onclick="setFilter('${f}',this)">${f}</div>`).join("");
+}
+
+function setFilter(f,el){
+  filter=f;
+  document.querySelectorAll("#filter-chips .chip").forEach(c=>c.classList.remove("on"));
+  el.classList.add("on");
+  renderLeads();
+}
+
+function renderLeads(){
+  const s=(document.getElementById("lead-search")?.value||"").toLowerCase();
+  const fl=leads.filter(l=>(l.prospectInfo||"").toLowerCase().includes(s)&&(filter==="all"||l.status===filter));
+  if(!fl.length){document.getElementById("leads-list").innerHTML=`<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No leads yet. Generate a DM in Claude, send it, then log it here!</div></div>`;return}
+  document.getElementById("leads-list").innerHTML=fl.map(l=>{
+    const ov=l.status!=="closed"&&l.status!=="dead"&&l.lastContact&&(Date.now()-new Date(l.lastContact))/86400000>=FU_DAYS;
+    return`<div class="lcard${ov?" ov":""}" onclick="openModal(${l.id})">
+      <div class="ltop"><div class="lname">${(l.prospectInfo||"").slice(0,38)}${(l.prospectInfo||"").length>38?"...":""}</div><div class="ldate">${l.date}</div></div>
+      <div class="lprev">"${(l.initialMessage||"No message logged").slice(0,65)}..."</div>
+      <div class="strow"><span class="stbadge st-${l.status}">${l.status}</span><span class="platbadge">${l.platform}</span>${ov?'<span style="font-size:10px;color:#ff6b6b;font-weight:700">⚠ FOLLOW UP</span>':""}</div>
+    </div>`}).join("");
+}
+
+function openModal(id){
+  selId=id;const l=leads.find(x=>x.id===id);if(!l)return;
+  document.getElementById("m-meta").textContent=`${l.date} · ${l.platform}`;
+  document.getElementById("m-info").textContent=l.prospectInfo||"";
+  document.getElementById("m-msg").textContent=l.initialMessage||"No message logged";
+  document.getElementById("m-status").value=l.status;
+  document.getElementById("m-notes").value=l.notes||"";
+  document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show");selId=null}
+function updateStatus(){if(!selId)return;const s=document.getElementById("m-status").value;leads=leads.map(l=>l.id===selId?{...l,status:s}:l);persist();renderLeads();updateHeader()}
+function saveNotes(){if(!selId)return;const n=document.getElementById("m-notes").value;leads=leads.map(l=>l.id===selId?{...l,notes:n}:l);persist()}
+function deleteLead(){if(!selId||!confirm("Delete?"))return;leads=leads.filter(l=>l.id!==selId);persist();closeModal();renderLeads();updateHeader()}
+
+function renderFU(){
+  const ov=overdue();
+  if(!ov.length){document.getElementById("fu-list").innerHTML=`<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">All caught up! No overdue follow-ups.</div></div>`;return}
+  document.getElementById("fu-list").innerHTML=`<div class="tip">🔔 ${ov.length} lead${ov.length>1?"s":""} need follow-up!<br><br>Go to Claude and type:<br><em>"Follow up DM for: [their info]"</em><br><br>I'll write it instantly!</div>`+
+  ov.map(l=>`<div class="fcard">
+    <div class="fdays">⚠ ${daysAgo(l.lastContact)} days since last contact</div>
+    <div class="fname">${(l.prospectInfo||"").slice(0,55)}${(l.prospectInfo||"").length>55?"...":""}</div>
+    <div class="flex-row" style="margin-top:0">
+      <button class="bsec flex1" onclick="markContacted(${l.id})">✓ Followed Up</button>
+      <button class="bdanger" onclick="markDead(${l.id})">Dead</button>
+    </div>
+  </div>`).join("");
+}
+
+function markContacted(id){leads=leads.map(l=>l.id===id?{...l,lastContact:new Date().toISOString(),status:"contacted"}:l);persist();updateHeader();renderFU()}
+function markDead(id){leads=leads.map(l=>l.id===id?{...l,status:"dead"}:l);persist();updateHeader();renderFU()}
+
+load();initFilters();renderDash();updateHeader();
+</script>
+</body>
+</html>
